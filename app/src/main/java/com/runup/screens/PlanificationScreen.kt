@@ -287,7 +287,7 @@ fun PlanificacionScreen(navController: NavController) {
                                     textStyle = LocalTextStyle.current.copy(fontSize = 13.sp)
                                 )
                                 ExposedDropdownMenu(expanded = expandedPeriodo, onDismissRequest = { expandedPeriodo = false }) {
-                                    listOf("Esta semana","Este mes","Próximos 3 meses").forEach {
+                                    listOf("1 semana"," 2 semanas","4 semanas").forEach {
                                         DropdownMenuItem(text = { Text(it) }, onClick = { periodo = it; expandedPeriodo = false })
                                     }
                                 }
@@ -302,35 +302,27 @@ fun PlanificacionScreen(navController: NavController) {
                                         isGenerating = true
                                         planGenerado = emptyList()
                                         val result = generatePlanIA(distancia, nivelRitmo, periodo, token)
-                                        result.forEach { entrenoMap[it.fecha] = it }
-                                        planGenerado = result
                                         isGenerating = false
-                                        //Llamada para guardar en el calendario
+
                                         if (result.isNotEmpty()) {
+                                            // Primero guardar en BD y obtener los IDs
                                             val resultConIds = guardarCalendarioEnBD(result, token)
                                             resultConIds.forEach { entrenoMap[it.fecha] = it }
                                             AppState.calendarioGlobal.addAll(resultConIds)
                                             planGenerado = resultConIds
-                                        }
-                                        // Navegar a la vista correspondiente
-                                        if (result.isNotEmpty()) {
+
+                                            // Luego navegar usando resultConIds
                                             currentView = when (periodo) {
-                                                "Esta semana"       -> CalendarView.SEMANAL
-                                                "Este mes"          -> CalendarView.MENSUAL
-                                                "Próximos 3 meses"  -> CalendarView.ANUAL
-                                                else                -> CalendarView.MENSUAL
+                                                "Esta semana" -> CalendarView.SEMANAL
+                                                "2 semanas"   -> CalendarView.SEMANAL
+                                                "4 semanas"   -> CalendarView.MENSUAL
+                                                else          -> CalendarView.MENSUAL
                                             }
-                                            // Ajustar weekStart a la semana del primer entreno
-                                            if (periodo == "Esta semana") {
-                                                weekStart = result.first().fecha.with(DayOfWeek.MONDAY)
+                                            if (periodo == "Esta semana" || periodo == "2 semanas") {
+                                                weekStart = resultConIds.first().fecha.with(DayOfWeek.MONDAY)
                                             }
-                                            // Ajustar mes al mes del primer entreno
-                                            if (periodo == "Este mes") {
-                                                currentMonth = YearMonth.from(result.first().fecha)
-                                            }
-                                            // Ajustar año si es 3 meses
-                                            if (periodo == "Próximos 3 meses") {
-                                                currentYear = result.first().fecha.year
+                                            if (periodo == "4 semanas") {
+                                                currentMonth = YearMonth.from(resultConIds.first().fecha)
                                             }
                                         }
                                     }
