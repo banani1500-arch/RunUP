@@ -15,5 +15,7 @@ Aplicación Android nativa para el seguimiento y planificación de entrenamiento
 - Menús de alimentación personalizados con IA
 - Panel de administración de usuarios
 
+- Backend: https://github.com/banani1500-arch/RunUp-Backend
+
 ## Autor
 Bruno Saldaña Calvo
